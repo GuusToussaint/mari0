@@ -281,9 +281,11 @@ function marioAI:execute_action()
 		self:leftkey()
 	-- jump
 	elseif self.action == 6 then
-		if self.consec_jumps < 3 then
+		if self.consec_jumps < 7 then
 			self:jump()
+			self.consec_jumps = self.consec_jumps + 1
 		else
+			print("stopjump")
 			self:stopjump()
 		end
 	end

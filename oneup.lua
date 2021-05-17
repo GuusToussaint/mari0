@@ -119,7 +119,7 @@ function givelive(id, t)
 	if mariolivecount ~= false then
 		for i = 1, players do
 			mariolives[i] = mariolives[i]+1
-			respawnplayers()
+			--respawnplayers()
 		end
 	end
 	t.destroy = true

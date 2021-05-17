@@ -47,6 +47,7 @@ TimeoutConstant = 20
 
 MaxNodes = 1000000
 
+repetetive_jumps = 0
 
 function emulator()
     -- for demo purposes
@@ -148,6 +149,7 @@ end
 function do_action(actions)
     if actions["P1 Left"] then
         objects["player"][1]:set_action(2)
+        repetetive_jumps = 0
     elseif actions["P1 Right"] then
         objects["player"][1]:set_action(1)
     elseif actions["P1 Up"] then
