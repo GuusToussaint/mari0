@@ -4,7 +4,8 @@ Runs on LÖVE 11.2
 MIT License
 
 # GameAI changes
-This code is altered to add the NEAT algoritm for the course Modern Game AI algoritms.
+This code is an altered version of [the original Mari0 code base](https://github.com/Stabyourself/mari0). 
+The alteratings were made in order to add the NEAT algoritm for the course Modern Game AI algoritms.
 
 The main changes focus on removing the menu en adding an emulator layer which dictates the training process and start maps create players, controll players, etc.
 
