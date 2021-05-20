@@ -1,14 +1,7 @@
---
--- Created by IntelliJ IDEA.
--- User: Guus Toussaint
--- Date: 4/22/2021
--- Time: 2:53 PM
--- To change this template use File | Settings | File Templates.
---
-
 -- Load the boring functions
 require("emulatorFunctions")
 counter = 0
+
 
 ButtonNames = {
     "A",
@@ -19,7 +12,7 @@ ButtonNames = {
     "Right",
 }
 
-
+-- HYPER PARAMETERS
 BoxRadius = 6
 InputSize = (BoxRadius*2+1) * (BoxRadius*2+1)
 
@@ -46,16 +39,16 @@ EnableMutationChance = 0.2
 TimeoutConstant = 20
 
 MaxNodes = 1000000
-
 repetetive_jumps = 0
 
 function emulator()
-    -- for demo purposes
+    -- Agent number was originally included to deal with a parallel training process
     agents = 1
     pool = createPool()
     initPool()
 end
 
+-- THE MAIN NEAT ALGORITM LOOP
 function NEATloop(dt)
 
     local species = pool.species[pool.currentSpecies]
@@ -75,7 +68,6 @@ function NEATloop(dt)
 
     local timeoutBonus = pool.currentFrame / 4
     if timeout + timeoutBonus <= 0 or objects["player"][1].dead == true then
---        local fitness = rightmost - pool.currentFrame / 2
         local fitness = rightmost
 
 
@@ -130,8 +122,6 @@ function evaluateCurrent()
     inputs = getInputs()
     controller = evaluateNetwork(genome.network, inputs)
 
---    print(dump(controller))
-
     if controller["P1 Left"] and controller["P1 Right"] then
         controller["P1 Left"] = false
         controller["P1 Right"] = false
@@ -142,10 +132,9 @@ function evaluateCurrent()
     end
 
     do_action(controller)
-
-    --joypad.set(controller)
 end
 
+-- Excecute the action on our custom MarioAI object
 function do_action(actions)
     if actions["P1 Left"] then
         objects["player"][1]:set_action(2)
@@ -159,19 +148,15 @@ function do_action(actions)
     end
 end
 
---TODO: nog aanpassen zodat getTiles werkt
+
+-- NEAT functions from SethBling
 function getInputs()
     getPositions()
-
-    sprites = getSprites()
-    extended = getExtendedSprites()
-
     local inputs = {}
 
     marioX = math.floor(marioX)
     marioY = math.floor(marioY)
 
---    print(marioX .. "\t" .. marioY)
 
     startYbox = marioY-BoxRadius
     endYbox = marioY+BoxRadius
@@ -180,6 +165,9 @@ function getInputs()
     endXbox = marioX+BoxRadius
     for dy_=startYbox,endYbox  do
         for dx_=startXbox,endXbox  do
+
+            -- create the input matrix
+
             local dx = math.max(dx_, 0)
             local dy = math.max(dy_, 0)
             inputs[#inputs+1] = 0
@@ -189,52 +177,14 @@ function getInputs()
             else
                 tile_found = 0
             end
---            print(#inputs .. "\t" .. dx_ .. "\t" .. dy_ .. "\t" .. tile_found)
 
             if tile_found == 1 and marioY+dy < 0x1B0 then
                 inputs[#inputs] = 1
             end
 
-            for i = 1,#sprites do
-                distx = math.abs(sprites[i]["x"] - (marioX+dx))
-                disty = math.abs(sprites[i]["y"] - (marioY+dy))
-                if distx <= 8 and disty <= 8 then
-                    inputs[#inputs] = -1
-                end
-            end
-
-            for i = 1,#extended do
-                distx = math.abs(extended[i]["x"] - (marioX+dx))
-                disty = math.abs(extended[i]["y"] - (marioY+dy))
-                if distx < 8 and disty < 8 then
-                    inputs[#inputs] = -1
-                end
-            end
         end
     end
---    print(dump(inputs))
     return inputs
-end
-
---TODO: nog uitzoeken hoe we sprites kunnen ophalen
-function getSprites()
-    local sprites = {}
-    for slot=0,4 do
-        -- local enemy = memory.readbyte(0xF+slot)
-        if slot == 1 then
-            enemy = 1
-        else
-            enemy = 0
-        end
-        if enemy ~= 0 then
-            -- local ex = memory.readbyte(0x6E + slot)*0x100 + memory.readbyte(0x87+slot)
-            -- local ey = memory.readbyte(0xCF + slot)+24
-            local ex = marioX + 50
-            local ey = marioY + 5
-            sprites[#sprites+1] = {["x"]=ex,["y"]=ey}
-        end
-    end
-    return sprites
 end
 
 function evaluateNetwork(network, inputs)
@@ -264,21 +214,13 @@ function evaluateNetwork(network, inputs)
     local outputs = {}
     for o=1,Outputs do
         local button = "P1 " .. ButtonNames[o]
-        --		print(network.neurons[MaxNodes+o].value)
         if network.neurons[MaxNodes+o].value > 0 then
             outputs[button] = true
         else
             outputs[button] = false
         end
     end
-    -- for key, value in pairs(outputs) do
-    --     print('\t', key, value)
-    -- end
     return outputs
-end
-
-function getExtendedSprites()
-    return {}
 end
 
 function getPositions()
